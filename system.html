@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Library Management System</title>
+  <style>
+    body{font-family:Arial, sans-serif; margin:0; padding:0; background:#f0f0f0;}
+    .nav{background:#222; padding:10px; color:white;}
+    .nav button{background:#444; padding:10px; border:none; color:white; cursor:pointer; margin-right:5px;}
+    .page{display:none; padding:20px; margin:20px; background:white; border-radius:10px;}
+    .active{display:block;}
+    input,select{padding:8px; margin:6px 0; width:260px;}
+    button{padding:10px 16px; cursor:pointer; margin-top:10px;}
+    table{border-collapse:collapse; margin-top:15px;}
+    td,th{border:1px solid #888; padding:8px;}
+    .error{color:red; font-size:14px;}
+    .section-title{margin-top:20px; font-weight:bold;}
+  </style>
+</head>
+<body>
+
+<div class="nav" id="navbar"></div>
+
+<!-- LOGIN PAGE -->
+<div id="login" class="page active">
+  <h2>Login</h2>
+  <input type="text" id="loginUser" placeholder="Username"><br>
+  <input type="password" id="loginPass" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+  <p id="loginError" class="error"></p>
+</div>
+
+<!-- HOME PAGE -->
+<div id="home" class="page">
+  <h2>Home</h2>
+  <p>Welcome to Library Management System</p>
+</div>
+
+<!-- SEARCH BOOKS -->
+<div id="search" class="page">
+  <h2>Search Books</h2>
+  <input type="text" id="searchQuery" placeholder="Book / Author">
+  <button onclick="searchBooks()">Search</button>
+  <p id="searchError" class="error"></p>
+  <table><thead><tr><th>Book</th><th>Author</th><th>Select</th></tr></thead><tbody id="searchResults"></tbody></table>
+</div>
+
+<!-- ISSUE BOOK -->
+<div id="issue" class="page">
+  <h2>Issue Book</h2>
+  <input id="issueBook" placeholder="Book Name"><br>
+  <input id="issueAuthor" placeholder="Author" disabled><br>
+  <label>Issue Date</label><br>
+  <input type="date" id="issueDate"><br>
+  <label>Return Date</label><br>
+  <input type="date" id="returnDate"><br>
+  <textarea id="issueRemark" placeholder="Remarks (optional)"></textarea><br>
+  <button onclick="submitIssue()">Submit</button>
+  <p id="issueError" class="error"></p>
+</div>
+
+<!-- RETURN BOOK -->
+<div id="return" class="page">
+  <h2>Return Book</h2>
+  <input id="retBook" placeholder="Book Name"><br>
+  <input id="retAuthor" placeholder="Author" disabled><br>
+  <input id="retSerial" placeholder="Serial Number"><br>
+  <label>Issue Date</label><br>
+  <input id="retIssueDate" disabled><br>
+  <label>Expected Return Date</label><br>
+  <input id="retExpectedDate"><br>
+  <button onclick="goFine()">Confirm</button>
+  <p id="returnError" class="error"></p>
+</div>
+
+<!-- PAY FINE -->
+<div id="fine" class="page">
+  <h2>Fine Payment</h2>
+  <p>Fine Amount: <span id="fineAmount">0</span></p>
+  <label><input type="checkbox" id="finePaid"> Fine Paid</label><br>
+  <textarea id="fineRemark" placeholder="Remarks (optional)"></textarea><br>
+  <button onclick="completeReturn()">Complete</button>
+  <p id="fineError" class="error"></p>
+</div>
+
+<!-- MAINTENANCE MODULE -->
+<div id="maintenance" class="page">
+  <h2>Maintenance</h2>
+
+  <!-- ADD BOOK -->
+  <div class="section-title">Add Book</div>
+  <label><input type="radio" name="addType" value="book" checked> Book</label>
+  <label><input type="radio" name="addType" value="movie"> Movie</label><br>
+  <input id="addBookName" placeholder="Name"><br>
+  <input id="addBookAuthor" placeholder="Author"><br>
+  <button onclick="addBook()">Add</button>
+  <p id="addBookError" class="error"></p>
+
+  <!-- UPDATE BOOK -->
+  <div class="section-title">Update Book</div>
+  <label><input type="radio" name="updType" value="book" checked> Book</label>
+  <label><input type="radio" name="updType" value="movie"> Movie</label><br>
+  <input id="updBookName" placeholder="Name"><br>
+  <input id="updBookAuthor" placeholder="Author"><br>
+  <button onclick="updateBook()">Update</button>
+  <p id="updBookError" class="error"></p>
+
+  <!-- MEMBERSHIP -->
+  <div class="section-title">Add Membership</div>
+  <input id="memName" placeholder="Name"><br>
+  <select id="memPlan">
+    <option value="6">6 Months</option>
+    <option value="12">1 Year</option>
+    <option value="24">2 Years</option>
+  </select><br>
+  <button onclick="addMembership()">Add Membership</button>
+  <p id="memError" class="error"></p>
+
+  <div class="section-title">Update Membership</div>
+  <input id="updMemNum" placeholder="Membership Number"><br>
+  <select id="updMemPlan">
+    <option value="6">Extend 6 Months</option>
+    <option value="cancel">Cancel Membership</option>
+  </select><br>
+  <button onclick="updateMembership()">Update Membership</button>
+  <p id="updMemError" class="error"></p>
+
+  <!-- USER MGMT -->
+  <div class="section-title">User Management</div>
+  <label><input type="radio" name="userType" value="new" checked> New User</label>
+  <label><input type="radio" name="userType" value="existing"> Existing</label><br>
+  <input id="usrName" placeholder="User Name"><br>
+  <button onclick="manageUser()">Submit</button>
+  <p id="usrError" class="error"></p>
+</div>
+
+<!-- REPORTS -->
+<div id="reports" class="page">
+  <h2>Reports</h2>
+  <p>Placeholder report module.</p>
+</div>
+
+<script>
+let role=null;
+
+function show(p){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(p).classList.add('active');}
+
+function login(){let u=loginUser.value,p=loginPass.value;if(!u||!p){loginError.innerText='Enter credentials';return;}loginError.innerText='';role=(u==='admin'?'admin':'user');renderNav();show('home');}
+
+function renderNav(){let nav="";
+nav+=`<button onclick=show('home')>Home</button>`;
+nav+=`<button onclick=show('search')>Search</button>`;
+nav+=`<button onclick=show('issue')>Issue</button>`;
+nav+=`<button onclick=show('return')>Return</button>`;
+nav+=`<button onclick=show('reports')>Reports</button>`;
+if(role==='admin')nav+=`<button onclick=show('maintenance')>Maintenance</button>`;
+navbar.innerHTML=nav;
+}
+
+function searchBooks(){let q=searchQuery.value;if(!q){searchError.innerText='Enter text';return;}searchError.innerText='';searchResults.innerHTML=`<tr><td>Book A</td><td>Author A</td><td><input type='radio' name='sel'></td></tr>`;}
+
+function submitIssue(){if(!issueBook.value||!issueDate.value||!returnDate.value){issueError.innerText='Fill required';return;}issueError.innerText='';alert('Issued');}
+
+function goFine(){if(!retBook.value||!retSerial.value){returnError.innerText='Fill required';return;}returnError.innerText='';let fine=Math.random()>0.5?50:0;fineAmount.innerText=fine;show('fine');}
+
+function completeReturn(){let fine=parseInt(fineAmount.innerText);if(fine>0&&!finePaid.checked){fineError.innerText='Pay fine first';return;}fineError.innerText='';alert('Return Completed');show('home');}
+
+function addBook(){if(!addBookName.value||!addBookAuthor.value){addBookError.innerText='Required';return;}addBookError.innerText='';alert('Book Added');}
+
+function updateBook(){if(!updBookName.value||!updBookAuthor.value){updBookError.innerText='Required';return;}updBookError.innerText='';alert('Book Updated');}
+
+function addMembership(){if(!memName.value){memError.innerText='Required';return;}memError.innerText='';alert('Membership Added');}
+
+function updateMembership(){if(!updMemNum.value){updMemError.innerText='Required';return;}updMemError.innerText='';alert('Membership Updated');}
+
+function manageUser(){if(!usrName.value){usrError.innerText='Required';return;}usrError.innerText='';alert('User Managed');}
+  
+  // MEMBERSHIP MODULE FUNCTIONALITY
+
+  // Storage simulation
+  let memberships = {};
+
+  // ADD MEMBERSHIP
+  document.getElementById("addMembershipForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let name = mName.value.trim();
+    let phone = mPhone.value.trim();
+    let email = mEmail.value.trim();
+    let duration = document.querySelector('input[name="mDuration"]:checked').value;
+
+    if (!name || !phone || !email) {
+      addMembershipError.textContent = "All fields are mandatory.";
+      return;
+    }
+
+    let membershipId = "MID" + Math.floor(Math.random() * 90000 + 10000);
+
+    memberships[membershipId] = {
+      id: membershipId,
+      name,
+      phone,
+      email,
+      duration: parseInt(duration)
+    };
+
+    addMembershipError.textContent = "Membership Added! ID: " + membershipId;
+    this.reset();
+  });
+
+  // FETCH MEMBERSHIP FOR UPDATE
+  document.getElementById("fetchMembership").addEventListener("click", () => {
+    let id = umNumber.value.trim();
+
+    if (!id || !memberships[id]) {
+      updateMembershipError.textContent = "Membership not found.";
+      membershipDetails.classList.add("hidden");
+      return;
+    }
+
+    let m = memberships[id];
+
+    umName.value = m.name;
+    umPhone.value = m.phone;
+    umEmail.value = m.email;
+
+    membershipDetails.classList.remove("hidden");
+    updateMembershipError.textContent = "";
+  });
+
+  // UPDATE MEMBERSHIP
+  document.getElementById("updateMembershipForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let id = umNumber.value.trim();
+    if (!memberships[id]) {
+      updateMembershipError.textContent = "Cannot update. Membership not found.";
+      return;
+    }
+
+    if (cancelMembership.checked) {
+      delete memberships[id];
+      updateMembershipError.textContent = "Membership Cancelled.";
+      membershipDetails.classList.add("hidden");
+      return;
+    }
+
+    let extend = parseInt(document.querySelector('input[name="umExtend"]:checked').value);
+    memberships[id].duration += extend;
+
+    updateMembershipError.textContent = "Membership Extended by " + extend + " months.";
+  });
+
+</script>
+
+  
+  <!-- Membership Module Pages -->
+  
+  <!-- Add Membership Page -->
+  <section id="addMembershipPage" class="page hidden">
+    <h2>Add Membership</h2>
+    <form id="addMembershipForm">
+      <label>Member Name:<input type="text" id="mName"></label>
+      <label>Phone:<input type="text" id="mPhone"></label>
+      <label>Email:<input type="email" id="mEmail"></label>
+
+      <p>Membership Duration:</p>
+      <label><input type="radio" name="mDuration" value="6" checked> 6 Months</label>
+      <label><input type="radio" name="mDuration" value="12"> 1 Year</label>
+      <label><input type="radio" name="mDuration" value="24"> 2 Years</label>
+
+      <button type="submit">Add Membership</button>
+      <p class="error" id="addMembershipError"></p>
+    </form>
+  </section>
+
+  <!-- Update Membership Page -->
+  <section id="updateMembershipPage" class="page hidden">
+    <h2>Update Membership</h2>
+    <form id="updateMembershipForm">
+      <label>Membership Number:<input type="text" id="umNumber"></label>
+      <button type="button" id="fetchMembership">Fetch</button>
+
+      <div id="membershipDetails" class="hidden">
+        <label>Member Name:<input type="text" id="umName" disabled></label>
+        <label>Phone:<input type="text" id="umPhone" disabled></label>
+        <label>Email:<input type="email" id="umEmail" disabled></label>
+
+        <p>Extend Membership By:</p>
+        <label><input type="radio" name="umExtend" value="6" checked> 6 Months</label>
+        <label><input type="radio" name="umExtend" value="12"> 1 Year</label>
+        <label><input type="radio" name="umExtend" value="24"> 2 Years</label>
+
+        <label><input type="checkbox" id="cancelMembership"> Cancel Membership</label>
+
+        <button type="submit">Update Membership</button>
+      </div>
+
+      <p class="error" id="updateMembershipError"></p>
+    </form>
+  </section>
+
+
+  <!-- Extended JS: Data stores, full features -->
+  <script>
+  // Persistent storage helpers
+  function load(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch(e){return def;} }
+  function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+  // Core data stores (persisted)
+  let books = load('lms_books', [
+    { id: 'B1001', title: 'The Alchemist', author: 'Paulo Coelho', type: 'book', qty: 1, available: 1 }
+  ]);
+  let users = load('lms_users', [
+    { username: 'admin', name: 'Admin', role: 'admin', password: 'admin123' },
+    { username: 'user', name: 'User', role: 'user', password: 'user123' }
+  ]);
+  let memberships = load('lms_memberships', {}); // id -> object
+  let transactions = load('lms_transactions', []); // issue/return records
+
+  save('lms_books', books); save('lms_users', users); save('lms_memberships', memberships); save('lms_transactions', transactions);
+
+  // Utilities
+  function uid(prefix){ return prefix + Math.floor(Math.random()*90000+10000); }
+  function todayISO(){ const d=new Date(); d.setHours(0,0,0,0); return d.toISOString().slice(0,10); }
+  function addDaysISO(d, days){ const dt=new Date(d); dt.setDate(dt.getDate()+days); return dt.toISOString().slice(0,10); }
+
+  // Login override to use users list
+  function login(){
+    let u=loginUser.value.trim(), p=loginPass.value.trim();
+    if(!u||!p){loginError.innerText='Enter credentials';return;}loginError.innerText='';
+    const found = users.find(x=>x.username===u && x.password===p);
+    if(!found){ loginError.innerText='Invalid credentials'; return; }
+    role = found.role;
+    renderNav();
+    show('home');
+  }
+
+  // Render nav updated
+  function renderNav(){let nav="";
+    nav+=`<button onclick=show('home')>Home</button>`;
+    nav+=`<button onclick=show('search')>Search</button>`;
+    nav+=`<button onclick=show('issue')>Issue</button>`;
+    nav+=`<button onclick=show('return')>Return</button>`;
+    nav+=`<button onclick=show('reports')>Reports</button>`;
+    if(role==='admin')nav+=`<button onclick=show('maintenance')>Maintenance</button>`;
+    nav+=`<button onclick="show('membersList')">Memberships</button>`;
+    nav+=`<button onclick="show('booksList')">Books</button>`;
+    navbar.innerHTML=nav;
+  }
+
+  // Search integrates books data
+  function searchBooks(){ let q=searchQuery.value.trim().toLowerCase();
+    if(!q){ searchError.innerText='Enter text'; return; } searchError.innerText='';
+    const rows = books.filter(b=>b.title.toLowerCase().includes(q)||b.author.toLowerCase().includes(q));
+    if(rows.length===0){ searchResults.innerHTML=`<tr><td colspan=3>No results</td></tr>`; return; }
+    searchResults.innerHTML = rows.map(b=>`<tr><td>${b.title}</td><td>${b.author}</td><td><input type='radio' name='sel' value='${b.id}' ${b.available>0? '':'disabled'}></td></tr>`).join('');
+  }
+
+  // Prefill issue fields when selecting search radio (optional)
+  document.addEventListener('change', (e)=>{ if(e.target && e.target.name==='sel'){ const id=e.target.value; const b=books.find(x=>x.id===id); if(b){ issueBook.value=b.title; issueAuthor.value=b.author; issueDate.value=todayISO(); returnDate.value=addDaysISO(todayISO(),15); } } });
+
+  // Submit Issue with validations
+  function submitIssue(){ issueError.innerText='';
+    const title=issueBook.value.trim(), author=issueAuthor.value.trim(), serialCandidate = books.find(b=>b.title===title);
+    const issueD = issueDate.value, retD = returnDate.value;
+    const today = todayISO();
+    const errs=[];
+    if(!title) errs.push('Name of book required');
+    if(!issueD) errs.push('Issue Date required');
+    if(issueD < today) errs.push('Issue Date cannot be lesser than today');
+    const maxReturn = addDaysISO(issueD,15);
+    if(retD > maxReturn) errs.push('Return Date cannot be greater than 15 days from Issue Date');
+    if(!serialCandidate) errs.push('Selected book must exist (search and select).');
+    if(errs.length){ issueError.innerText = errs.join('; '); return; }
+
+    // find available serial (simple qty decrement)
+    const book = serialCandidate;
+    if(book.available<=0){ issueError.innerText='Book not available'; return; }
+    book.available -= 1; save('lms_books', books);
+    const tx = { id: uid('T'), type:'issue', title: book.title, author: book.author, bookId: book.id, issueDate: issueD, expectedReturnDate: retD, returned:false };
+    transactions.push(tx); save('lms_transactions', transactions);
+    alert('Book issued.');
+    show('transactionsList'); renderTransactions();
+  }
+
+  // Transactions / Return flow
+  function renderTransactions(){ show('transactionsList'); let rows = transactions.map(t=>`<tr><td>${t.type}</td><td>${t.title}</td><td>${t.bookId||''}</td><td>${t.issueDate||''}</td><td>${t.expectedReturnDate||''}</td><td>${t.actualReturnDate||''}</td><td>${t.fineAmount||0}</td><td>${t.returned? 'Returned' : `<button onclick="startReturn('${t.id}')">Return</button>`}</td></tr>`).join('');
+    transactionsTable && (transactionsTable.innerHTML = rows);
+  }
+
+  // Start return: populate return form
+  function startReturn(txId){ const tx = transactions.find(x=>x.id===txId && !x.returned); if(!tx){ alert('Transaction not found'); return; }
+    retBook.value = tx.title; retAuthor.value = tx.author; retSerial.value = tx.bookId; retIssueDate.value = tx.issueDate; retExpectedDate.value = tx.expectedReturnDate; show('return'); }
+
+  // goFine: calculate fine and go to fine screen
+  function goFine(){ returnError.innerText=''; const book=retBook.value.trim(); const serial=retSerial.value.trim(); if(!book||!serial){ returnError.innerText='All mandatory fields required'; return; }
+    // find transaction
+    const tx = transactions.find(x=>x.bookId===serial && !x.returned);
+    if(!tx){ returnError.innerText='Active issue not found for this serial'; return; }
+    // calculate fine: assume rate 10 per day overdue
+    const expected = new Date(tx.expectedReturnDate); const actual = new Date(retExpectedDate.value||todayISO());
+    const diff = Math.ceil((actual - expected)/(1000*60*60*24)); const fine = diff>0? diff*10:0;
+    fineAmount.innerText = fine; finePaid.checked=false; fineError.innerText=''; show('fine'); }
+
+  // completeReturn: require fine paid if fine>0
+  function completeReturn(){ fineError.innerText=''; const fine = parseInt(fineAmount.innerText)||0; if(fine>0 && !finePaid.checked){ fineError.innerText='Paid Fine checkbox must be selected before completing.'; return; }
+    // mark transaction returned
+    const tx = transactions.find(x=>x.bookId===retSerial.value && !x.returned);
+    if(tx){ tx.returned=true; tx.actualReturnDate = retExpectedDate.value||todayISO(); tx.fineAmount=fine; tx.finePaid = fine===0? true : finePaid.checked; save('lms_transactions', transactions); }
+    // update book availability
+    const bk = books.find(b=>b.id===retSerial.value); if(bk) { bk.available = Math.min(bk.qty, bk.available+1); save('lms_books', books); }
+    alert('Return processed'); renderTransactions(); show('transactionsList'); }
+
+  // Add Book (maintenance) - enhanced: include qty and serial auto-gen
+  function addBook(){ addBookError.innerText=''; const name=addBookName.value.trim(), author=addBookAuthor.value.trim(); const type = document.querySelector('input[name="addType"]:checked').value;
+    if(!name||!author){ addBookError.innerText='All fields mandatory'; return; }
+    const id = uid(type==='book'?'B':'M'); const qty = 1; books.push({ id, title:name, author, type, qty, available:qty }); save('lms_books', books); addBookName.value=''; addBookAuthor.value=''; alert('Added: '+id); }
+
+  // Update Book - find by id or title
+  function updateBook(){ updBookError.innerText=''; const name=updBookName.value.trim(), author=updBookAuthor.value.trim(); const type = document.querySelector('input[name="updType"]:checked').value;
+    if(!name||!author){ updBookError.innerText='All fields mandatory'; return; }
+    const book = books.find(b=>b.title===name || b.id===name);
+    if(!book){ updBookError.innerText='Book not found (use title or id)'; return; }
+    book.title = name; book.author = author; book.type = type; save('lms_books', books); alert('Book updated'); }
+
+  // Membership: already added earlier but persist
+  document.getElementById('addMembershipForm') && document.getElementById('addMembershipForm').addEventListener('submit', function(e){ e.preventDefault(); const name=mName.value.trim(), phone=mPhone.value.trim(), email=mEmail.value.trim(); const duration = parseInt(document.querySelector('input[name="mDuration"]:checked').value);
+    if(!name||!phone||!email){ addMembershipError.textContent='All fields are mandatory.'; return; }
+    const id = uid('MID'); memberships[id] = { id, name, phone, email, duration, from: todayISO(), to: addDaysISO(todayISO(), duration*30) }; save('lms_memberships', memberships); addMembershipError.textContent = 'Membership Added! ID: '+id; this.reset(); renderMemberships(); });
+
+  // Update membership persisted
+  document.getElementById('fetchMembership') && document.getElementById('fetchMembership').addEventListener('click', ()=>{ const id=umNumber.value.trim(); if(!id || !memberships[id]){ updateMembershipError.textContent='Membership not found.'; membershipDetails.classList.add('hidden'); return; } const m=memberships[id]; umName.value=m.name; umPhone.value=m.phone; umEmail.value=m.email; membershipDetails.classList.remove('hidden'); updateMembershipError.textContent=''; });
+  document.getElementById('updateMembershipForm') && document.getElementById('updateMembershipForm').addEventListener('submit', function(e){ e.preventDefault(); const id=umNumber.value.trim(); if(!memberships[id]){ updateMembershipError.textContent='Cannot update. Membership not found.'; return; } if(cancelMembership.checked){ delete memberships[id]; save('lms_memberships', memberships); updateMembershipError.textContent='Membership Cancelled.'; membershipDetails.classList.add('hidden'); renderMemberships(); return; } const extend = parseInt(document.querySelector('input[name="umExtend"]:checked').value); memberships[id].duration += extend; memberships[id].to = addDaysISO(memberships[id].to, extend*30); save('lms_memberships', memberships); updateMembershipError.textContent='Membership Extended by '+extend+' months.'; renderMemberships(); });
+
+  // User management - enhanced: prompts to collect username/password/role
+  function manageUser(){ usrError.innerText=''; const name=usrName.value.trim(); if(!name){ usrError.innerText='Name required'; return; }
+    const mode = document.querySelector('input[name="userType"]:checked').value;
+    if(mode==='new'){
+      const username = prompt('Enter username for new user:'); if(!username){ alert('Username required'); return; }
+      const password = prompt('Enter password for new user:'); if(!password){ alert('Password required'); return; }
+      const roleSel = prompt('Role (admin/user)', 'user'); users.push({ username, name, role: roleSel, password }); save('lms_users', users); alert('User created'); usrName.value='';
+    } else {
+      const username = prompt('Enter username of existing user to update:'); if(!username){ alert('Username required'); return; }
+      const u = users.find(x=>x.username===username); if(!u){ alert('User not found'); return; }
+      const newName = prompt('Enter new name', u.name) || u.name; const newRole = prompt('Enter role (admin/user)', u.role) || u.role; u.name=newName; u.role=newRole; save('lms_users', users); alert('User updated'); usrName.value=''; }
+  }
+
+  // Render lists pages
+  function renderMemberships(){ show('membersList'); const container = document.getElementById('membersListContent'); if(!container) return; const rows = Object.values(memberships).map(m=>`<tr><td>${m.id}</td><td>${m.name}</td><td>${m.email}</td><td>${m.from}</td><td>${m.to}</td></tr>`).join(''); container.innerHTML = `<table><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>From</th><th>To</th></tr></thead><tbody>${rows}</tbody></table>`; }
+
+  function renderBooks(){ show('booksList'); const container = document.getElementById('booksListContent'); if(!container) return; const rows = books.map(b=>`<tr><td>${b.id}</td><td>${b.title}</td><td>${b.author}</td><td>${b.type}</td><td>${b.qty}</td><td>${b.available}</td></tr>`).join(''); container.innerHTML = `<table><thead><tr><th>ID</th><th>Title</th><th>Author</th><th>Type</th><th>Qty</th><th>Available</th></tr></thead><tbody>${rows}</tbody></table>`; }
+
+  // Transactions list element creation (if missing earlier)
+  const transactionsTable = document.getElementById('transactionsTable') || (function(){ const el = document.createElement('div'); el.id='transactionsTable'; document.body.appendChild(el); return el; })();
+
+  // Create placeholder pages for lists if not present
+  if(!document.getElementById('membersList')){
+    const sec = document.createElement('section'); sec.id='membersList'; sec.className='page'; sec.innerHTML = '<h2>Memberships</h2><div id="membersListContent"></div>'; document.body.appendChild(sec);
+  }
+  if(!document.getElementById('booksList')){
+    const sec = document.createElement('section'); sec.id='booksList'; sec.className='page'; sec.innerHTML = '<h2>Books</h2><div id="booksListContent"></div>'; document.body.appendChild(sec);
+  }
+  if(!document.getElementById('transactionsList')){
+    const sec = document.createElement('section'); sec.id='transactionsList'; sec.className='page'; sec.innerHTML = '<h2>Transactions</h2><div id="transactionsTable"></div>'; document.body.appendChild(sec);
+  }
+
+  // Initial render hooks
+  renderNav(); renderBooks(); renderMemberships(); renderTransactions();
+
+  </script>
+</body>
+</html>

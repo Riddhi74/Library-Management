@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Library Management System</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+h2,h3 { color: #333; }
+form { margin-bottom: 20px; }
+input, select, button { margin: 5px 0; padding: 5px; }
+.hidden { display: none; }
+nav a { margin: 0 10px; cursor: pointer; text-decoration: underline; color: blue; }
+table { border-collapse: collapse; width: 100%; margin: 10px 0; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+</style>
+</head>
+<body>
+
+<h2>Library Management System Preview</h2>
+
+<div id="loginPage">
+    <h3>Login</h3>
+    <form id="loginForm">
+        Username: <input type="text" id="loginUser" required><br>
+        Password: <input type="password" id="loginPass" required><br>
+        Role: 
+        <select id="loginRole">
+            <option value="admin">Admin</option>
+            <option value="user" selected>User</option>
+        </select><br>
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<div id="dashboard" class="hidden">
+    <h3>Dashboard</h3>
+    <nav>
+        <a onclick="showPage('bookPage')">Books</a>
+        <a onclick="showPage('membershipPage')">Membership</a>
+        <a onclick="showPage('transactionPage')">Transactions</a>
+        <a onclick="showPage('userPage')">User Management</a>
+        <a onclick="showPage('maintenancePage')">Maintenance</a>
+        <a onclick="logout()">Logout</a>
+    </nav>
+</div>
+
+<!-- Book Page -->
+<div id="bookPage" class="hidden">
+    <h3>Books</h3>
+    <h4>Add Book</h4>
+    <form id="addBookForm">
+        Title: <input type="text" id="bookTitle"><br>
+        Author: <input type="text" id="bookAuthor"><br>
+        Type: <select id="bookType">
+            <option value="book" selected>Book</option>
+            <option value="movie">Movie</option>
+        </select><br>
+        <button type="submit">Add Book</button>
+    </form>
+
+    <h4>Book List</h4>
+    <table id="bookTable">
+        <thead>
+            <tr><th>Title</th><th>Author</th><th>Type</th><th>Available</th><th>Select</th></tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Membership Page -->
+<div id="membershipPage" class="hidden">
+    <h3>Membership</h3>
+    <h4>Add Membership</h4>
+    <form id="addMembershipForm">
+        Name: <input type="text" id="memberName"><br>
+        Duration: <select id="memberDuration">
+            <option value="6" selected>6 months</option>
+            <option value="12">1 year</option>
+            <option value="24">2 years</option>
+        </select><br>
+        <button type="submit">Add Membership</button>
+    </form>
+    <h4>Membership List</h4>
+    <table id="membershipTable">
+        <thead><tr><th>Name</th><th>Start Date</th><th>End Date</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Transactions Page -->
+<div id="transactionPage" class="hidden">
+    <h3>Transactions</h3>
+    <h4>Issue Book</h4>
+    <form id="issueForm">
+        Book Title: <input type="text" id="issueBook"><br>
+        Issue Date: <input type="date" id="issueDate"><br>
+        Return Date: <input type="date" id="returnDate"><br>
+        Remarks: <input type="text" id="issueRemarks"><br>
+        <button type="submit">Issue Book</button>
+    </form>
+
+    <h4>Return Book</h4>
+    <form id="returnForm">
+        Book Title: <input type="text" id="returnBook"><br>
+        Fine Paid: <input type="checkbox" id="finePaid"><br>
+        Remarks: <input type="text" id="returnRemarks"><br>
+        <button type="submit">Return Book</button>
+    </form>
+
+    <h4>Transactions List</h4>
+    <table id="transactionTable">
+        <thead><tr><th>Book</th><th>Issue Date</th><th>Return Date</th><th>Fine Paid</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- User Management Page -->
+<div id="userPage" class="hidden">
+    <h3>User Management</h3>
+    <form id="userForm">
+        Name: <input type="text" id="userName"><br>
+        Type: <select id="userType">
+            <option value="new" selected>New</option>
+            <option value="existing">Existing</option>
+        </select><br>
+        <button type="submit">Add/Update User</button>
+    </form>
+    <h4>User List</h4>
+    <table id="userTable">
+        <thead><tr><th>Name</th><th>Type</th></tr></thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<!-- Maintenance Page (Admin Only) -->
+<div id="maintenancePage" class="hidden">
+    <h3>Maintenance (Admin Only)</h3>
+    <p>Reports and system maintenance can be accessed by Admin only.</p>
+</div>
+
+<script>
+// In-memory data
+let books = [];
+let memberships = [];
+let transactions = [];
+let users = [];
+
+// Login
+let currentUserRole = '';
+document.getElementById('loginForm').onsubmit = function(e){
+    e.preventDefault();
+    const username = document.getElementById('loginUser').value;
+    currentUserRole = document.getElementById('loginRole').value;
+    alert('Login successful as ' + currentUserRole);
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('dashboard').classList.remove('hidden');
+    showPage('bookPage');
+}
+
+// Navigation
+function showPage(pageId){
+    const pages = ['bookPage','membershipPage','transactionPage','userPage','maintenancePage'];
+    pages.forEach(p=>document.getElementById(p).classList.add('hidden'));
+    if(pageId === 'maintenancePage' && currentUserRole !== 'admin'){
+        alert('Access denied! Admin only.');
+        return;
+    }
+    document.getElementById(pageId).classList.remove('hidden');
+}
+
+// Logout
+function logout(){
+    location.reload();
+}
+
+// Add Book
+document.getElementById('addBookForm').onsubmit = function(e){
+    e.preventDefault();
+    let title = document.getElementById('bookTitle').value;
+    let author = document.getElementById('bookAuthor').value;
+    let type = document.getElementById('bookType').value;
+    if(!title || !author){ alert('All fields required'); return;}
+    books.push({title, author, type, available:true});
+    alert('Book added successfully');
+    displayBooks();
+}
+function displayBooks(){
+    let tbody = document.querySelector('#bookTable tbody');
+    tbody.innerHTML='';
+    books.forEach((b,i)=>{
+        tbody.innerHTML += `<tr>
+            <td>${b.title}</td><td>${b.author}</td><td>${b.type}</td><td>${b.available?'Yes':'No'}</td>
+            <td><input type="radio" name="selectBook" value="${i}"></td>
+        </tr>`;
+    });
+}
+
+// Add Membership
+document.getElementById('addMembershipForm').onsubmit = function(e){
+    e.preventDefault();
+    let name = document.getElementById('memberName').value;
+    let duration = parseInt(document.getElementById('memberDuration').value);
+    if(!name){ alert('Name required'); return;}
+    let start = new Date();
+    let end = new Date();
+    end.setMonth(end.getMonth()+duration);
+    memberships.push({name, start:start.toISOString().slice(0,10), end:end.toISOString().slice(0,10)});
+    alert('Membership added');
+    displayMemberships();
+}
+function displayMemberships(){
+    let tbody = document.querySelector('#membershipTable tbody');
+    tbody.innerHTML='';
+    memberships.forEach(m=>{
+        tbody.innerHTML += `<tr><td>${m.name}</td><td>${m.start}</td><td>${m.end}</td></tr>`;
+    });
+}
+
+// Transactions
+document.getElementById('issueForm').onsubmit = function(e){
+    e.preventDefault();
+    let book = document.getElementById('issueBook').value;
+    if(!book){ alert('Book name required'); return;}
+    let issueDate = document.getElementById('issueDate').value;
+    let returnDate = document.getElementById('returnDate').value;
+    transactions.push({book, issueDate, returnDate, finePaid:false});
+    alert('Book issued');
+    displayTransactions();
+}
+document.getElementById('returnForm').onsubmit = function(e){
+    e.preventDefault();
+    let book = document.getElementById('returnBook').value;
+    let finePaid = document.getElementById('finePaid').checked;
+    if(!book){ alert('Book name required'); return;}
+    if(!finePaid){ alert('Please pay fine first'); return;}
+    transactions.push({book, issueDate:'-', returnDate:new Date().toISOString().slice(0,10), finePaid:true});
+    alert('Book returned');
+    displayTransactions();
+}
+function displayTransactions(){
+    let tbody = document.querySelector('#transactionTable tbody');
+    tbody.innerHTML='';
+    transactions.forEach(t=>{
+        tbody.innerHTML += `<tr><td>${t.book}</td><td>${t.issueDate}</td><td>${t.returnDate}</td><td>${t.finePaid?'Yes':'No'}</td></tr>`;
+    });
+}
+
+// User Management
+document.getElementById('userForm').onsubmit = function(e){
+    e.preventDefault();
+    let name = document.getElementById('userName').value;
+    let type = document.getElementById('userType').value;
+    if(!name){ alert('Name required'); return;}
+    users.push({name,type});
+    displayUsers();
+}
+function displayUsers(){
+    let tbody = document.querySelector('#userTable tbody');
+    tbody.innerHTML='';
+    users.forEach(u=>{
+        tbody.innerHTML += `<tr><td>${u.name}</td><td>${u.type}</td></tr>`;
+    });
+}
+</script>
+
+</body>
+</html>
