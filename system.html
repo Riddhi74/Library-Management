@@ -1,327 +1,825 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Library Management System</title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Library Management System (Full)</title>
 <style>
-/* Body and container */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(to right, #f4f7f9, #e0f7fa);
-    margin:0; padding:0; color:#333;
-}
-.container {
-    max-width: 1200px;
-    margin: auto;
-    padding:20px;
-    text-align:center;
-}
+  :root{
+    --blue1:#3498db; --blue2:#2980b9; --accent:#1abc9c;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background:#f0f4f7; color:#222; -webkit-font-smoothing:antialiased;
+  }
+  .hidden{ display:none; }
 
-/* Logo and Heading */
-.logo-heading {
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:15px;
-    margin-bottom:20px;
-}
-.logo-heading img {
-    width:60px;
-    height:60px;
-}
+  /* ============ LOGIN PAGE ============ */
+  #loginPage{
+    min-height:100vh;
+    display:flex; align-items:center; justify-content:center;
+    background: url('https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=1470&q=80') center/cover no-repeat;
+    position:relative;
+  }
+  #loginPage::before{
+    content:""; position:absolute; inset:0; background:rgba(0,0,0,0.55);
+  }
+  .login-card{
+    position:relative; z-index:2; width:100%; max-width:980px;
+    background:rgba(255,255,255,0.98); border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.25);
+    padding:22px; display:flex; gap:18px; align-items:center;
+  }
+  .logo {
+    width:86px; height:86px; flex:0 0 86px; display:flex; align-items:center; justify-content:center;
+  }
+  .logo img{ width:72px; height:72px; }
+  .login-form { flex:1; }
+  .login-form h1{ margin:0; font-size:20px; }
+  .login-form p{ margin:6px 0 12px; color:#555; }
+  .login-form input, .login-form select, .login-form button{
+    width:100%; max-width:420px; padding:10px 12px; margin:6px 0; border-radius:8px; border:1px solid #d0d7dd;
+  }
+  .login-form button{
+    background:linear-gradient(90deg,var(--blue1),var(--blue2)); color:#fff; border:none; cursor:pointer;
+    box-shadow:0 8px 18px rgba(41,128,185,0.12); transition:transform .12s;
+  }
+  .login-form button:hover{ transform:scale(1.02); }
 
-/* Cards */
-.card {
-    background: #fff;
-    padding: 20px;
-    margin-bottom: 20px;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.25);
-}
+  /* ============ APP WRAPPER ============ */
+  .container{ max-width:1200px; margin:18px auto; padding:16px; display:none; }
+  .top-bar{ background:#2c3e50; color:#ecf0f1; padding:12px; border-radius:10px; display:flex; align-items:center; gap:12px; justify-content:space-between; }
+  .top-bar .nav{ display:flex; gap:8px; align-items:center; }
+  .top-bar a{ color:#ecf0f1; text-decoration:none; padding:6px 10px; border-radius:8px; font-weight:600; }
+  .top-bar a:hover{ background:rgba(255,255,255,0.04); color:var(--accent); transform:scale(1.02); }
 
-/* Login page center */
-#loginPage {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 80vh;
-}
-#loginPage .card {
-    max-width: 400px;
-}
+  /* Dashboard centered */
+  .dashboard-wrap{ display:flex; justify-content:center; margin-top:20px; }
+  .dashboard{ display:flex; gap:20px; flex-wrap:wrap; justify-content:center; align-items:center; }
+  .stat-card{ width:180px; padding:16px; border-radius:12px; color:#fff; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.08); cursor:default; }
+  .stat-card h3{ margin:6px 0; font-size:20px; }
+  .stat-books{ background:linear-gradient(90deg,var(--blue1),var(--blue2)); }
+  .stat-members{ background:linear-gradient(90deg,#1abc9c,#16a085); }
+  .stat-issued{ background:linear-gradient(90deg,#e67e22,#d35400); }
+  .stat-fines{ background:linear-gradient(90deg,#e74c3c,#c0392b); }
 
-/* Forms */
-form input, form select, form button {
-    margin: 5px 0;
-    padding: 8px 10px;
-    border-radius: 6px;
-    border:1px solid #ccc;
-    width:100%;
-    max-width:400px;
-    box-sizing:border-box;
-}
-form input:focus, form select:focus { border-color: #3498db; outline:none; }
-form button {
-    background: linear-gradient(to right, #3498db, #2980b9);
-    color:white;
-    border:none;
-    cursor:pointer;
-    transition: 0.3s;
-}
-form button:hover {
-    background: linear-gradient(to right, #2980b9, #1c5980);
-}
+  /* Pages */
+  .page{ display:none; margin-top:18px; background:var(--card); padding:16px; border-radius:10px; box-shadow:0 10px 28px rgba(0,0,0,0.04); }
+  .page.active{ display:block; }
 
-/* Table */
-table { border-collapse: collapse; width:100%; margin-top:10px; transition: 0.3s; }
-th, td { border:1px solid #ddd; padding:8px; text-align:left; }
-th { background: linear-gradient(to right, #3498db, #2980b9); color:white; }
-tr:nth-child(even) { background:#f2f2f2; }
-tr:hover { background: #d1f0ff; transition: 0.3s; }
+  .flex-row{ display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+  .col{ flex:1; min-width:260px; }
 
-/* Navigation */
-nav { margin-bottom:20px; background:#2c3e50; padding:10px; border-radius:8px; text-align:center; }
-nav a { color:#ecf0f1; margin:0 10px; text-decoration:none; font-weight:bold; transition:0.3s; }
-nav a:hover { text-decoration:underline; color:#1abc9c; }
+  table{ width:100%; border-collapse:collapse; margin-top:10px; }
+  th, td{ border:1px solid #e6eef6; padding:8px 10px; font-size:0.95rem; }
+  th{ background:linear-gradient(90deg,var(--blue1),var(--blue2)); color:#fff; }
+  tr:hover td{ background:#f0fbff; }
 
-/* Hidden pages */
-.hidden { display:none; }
+  form input[type="text"], form input[type="date"], form select, form input[type="number"]{
+    padding:8px 10px; border-radius:8px; border:1px solid #d6dde6; width:100%; margin-bottom:8px;
+  }
+  button.primary{ padding:10px 14px; border-radius:8px; border:none; background:linear-gradient(90deg,var(--blue1),var(--blue2)); color:#fff; cursor:pointer; }
+  button.ghost{ padding:8px 10px; border-radius:8px; background:transparent; border:1px solid #d6dde6; cursor:pointer; }
 
-/* Dashboard cards */
-.stats { display:flex; gap:20px; flex-wrap:wrap; justify-content:center; margin-bottom:20px; }
-.stat-card {
-    flex:1;
-    padding:15px;
-    border-radius:10px;
-    text-align:center;
-    box-shadow:0 3px 10px rgba(0,0,0,0.2);
-    color:white;
-    cursor:pointer;
-    transition: transform 0.3s, box-shadow 0.3s;
-    min-width: 150px;
-}
-.stat-card h3 { margin:10px 0; font-size:24px; }
-.stat-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-}
-.stat-books { background: linear-gradient(to right, #3498db, #2980b9);}
-.stat-members { background: linear-gradient(to right, #1abc9c, #16a085);}
-.stat-issued { background: linear-gradient(to right, #e67e22, #d35400);}
-.stat-fines { background: linear-gradient(to right, #e74c3c, #c0392b); }
+  .small{ color:#666; font-size:0.9rem; }
 
-/* Responsive */
-@media(max-width:768px){
-    .stats { flex-direction: column; align-items:center; }
-    .logo-heading { flex-direction: column; gap:10px; }
-}
+  /* overlay modal */
+  .overlay{ position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:9999; }
+  .modal{ background:#fff; width:100%; max-width:600px; padding:18px; border-radius:10px; box-shadow:0 12px 40px rgba(0,0,0,0.25); }
+
+  @media(max-width:900px){
+    .login-card{ flex-direction:column; align-items:center; text-align:center; }
+    .top-bar{ flex-direction:column; gap:8px; align-items:stretch; }
+  }
 </style>
 </head>
 <body>
-<div class="container">
 
-<!-- Logo and Heading -->
-<div class="logo-heading">
-    <img src="https://img.icons8.com/ios-filled/100/000000/library.png" alt="Library Logo">
-    <h2>Library Management System</h2>
+<!-- LOGIN PAGE -->
+<div id="loginPage" aria-hidden="false">
+  <div class="login-card" role="dialog" aria-labelledby="loginTitle">
+    <div class="logo">
+      <img src="https://img.icons8.com/ios-filled/100/000000/library.png" alt="logo">
+    </div>
+    <div class="login-form">
+      <h1 id="loginTitle">Library Management System</h1>
+      <p class="small">Sign in with your email & password. If you don't have an account, create one below. Admin seeded: <strong>admin@lms.com</strong> / <strong>admin123</strong></p>
+
+      <label class="small">Email</label>
+      <input id="loginEmail" type="email" placeholder="you@example.com" />
+      <label class="small">Password</label>
+      <input id="loginPass" type="password" placeholder="password" />
+      <label class="small">Role</label>
+      <select id="loginRole">
+        <option value="user" selected>User</option>
+        <option value="admin">Admin</option>
+      </select>
+      <div style="display:flex;gap:8px;margin-top:8px;">
+        <button class="primary" onclick="handleLogin()">Login</button>
+        <button class="ghost" onclick="showSignup()">Sign Up</button>
+      </div>
+
+      <hr style="margin:12px 0">
+      <div id="signupArea" style="display:none">
+        <label class="small">Full name</label>
+        <input id="signupName" type="text" placeholder="Full name (optional)"/>
+        <label class="small">Email</label>
+        <input id="signupEmail" type="email" placeholder="email" />
+        <label class="small">Password</label>
+        <input id="signupPass" type="password" placeholder="password" />
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="primary" onclick="handleSignup()">Create account</button>
+          <button class="ghost" onclick="hideSignup()">Cancel</button>
+        </div>
+      </div>
+      <div id="loginError" style="color:#c0392b;margin-top:8px;display:none"></div>
+    </div>
+  </div>
 </div>
 
-<!-- Login Page -->
-<div id="loginPage">
-    <div class="card">
-        <h3>Login</h3>
-        <form id="loginForm">
-            Username: <input type="text" id="loginUser" required><br>
-            Password: <input type="password" id="loginPass" required><br>
-            Role: 
-            <select id="loginRole">
-                <option value="admin">Admin</option>
-                <option value="user" selected>User</option>
-            </select><br>
-            <button type="submit">Login</button>
+<!-- APP CONTAINER -->
+<div class="container" id="app" aria-hidden="true">
+
+  <div class="top-bar">
+    <div class="nav">
+      <a href="#" onclick="openPage('dashboard')">Dashboard</a>
+      <a href="#" onclick="openPage('books')">Books</a>
+      <a href="#" onclick="openPage('movies')">Movies</a>
+      <a href="#" onclick="openPage('members')">Membership</a>
+      <a href="#" onclick="openPage('transactions')">Transactions</a>
+      <a href="#" onclick="openPage('users')">Users</a>
+      <a href="#" onclick="openPage('maintenance')">Maintenance</a>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div id="currentUserDisplay" class="small"></div>
+      <button class="ghost" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page active">
+    <div class="dashboard-wrap">
+      <div class="dashboard">
+        <div class="stat-card stat-books">
+          <div>Total Books</div><h3 id="statBooks">0</h3>
+        </div>
+        <div class="stat-card stat-members">
+          <div>Total Members</div><h3 id="statMembers">0</h3>
+        </div>
+        <div class="stat-card stat-issued">
+          <div>Issued Items</div><h3 id="statIssued">0</h3>
+        </div>
+        <div class="stat-card stat-fines">
+          <div>Pending Fines</div><h3 id="statFines">0</h3>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOOKS PAGE -->
+  <div id="page-books" class="page">
+    <h2>Books</h2>
+    <div class="flex-row">
+      <div class="col">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="bookSearch" type="text" placeholder="Search books by title..." oninput="displayBooks()" />
+          <button class="primary" onclick="focusAdd('book')">Add</button>
+        </div>
+        <div style="margin-top:10px;overflow:auto;">
+          <table id="bookTable">
+            <thead><tr><th>Title</th><th>Author</th><th>Available</th><th>Select</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col">
+        <h4>Add Book</h4>
+        <form id="formAddBook">
+          <input id="addBookTitle" type="text" placeholder="Title *" required />
+          <input id="addBookAuthor" type="text" placeholder="Author *" required />
+          <button class="primary" type="submit">Add Book</button>
         </form>
+
+        <hr style="margin:12px 0">
+
+        <h4>Issue (Book / Movie)</h4>
+        <form id="formIssue">
+          <label class="small">Type</label>
+          <select id="issueType" onchange="populateIssueTitles()"><option value="book">Book</option><option value="movie">Movie</option></select>
+          <label class="small">Title (available)</label>
+          <select id="issueTitleSelect"><option value="">-- select --</option></select>
+          <label class="small">Author / Director (auto)</label>
+          <input id="issueAuthorDir" type="text" readonly />
+          <label class="small">Issue Date</label>
+          <input id="issueDate" type="date" />
+          <label class="small">Return Date</label>
+          <input id="issueReturnDate" type="date" />
+          <input id="issueRemarks" type="text" placeholder="Remarks (optional)"/>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <button class="primary" type="submit">Issue</button>
+            <button class="ghost" type="button" onclick="resetIssueForm()">Reset</button>
+          </div>
+          <div class="small" style="margin-top:6px;">Return default = 15 days from issue; cannot be > 15 days.</div>
+        </form>
+      </div>
     </div>
-</div>
+  </div>
 
-<!-- Dashboard -->
-<div id="dashboard" class="hidden card">
-    <h3>Dashboard</h3>
-    <nav>
-        <a onclick="showPage('bookPage')">Books</a>
-        <a onclick="showPage('membershipPage')">Membership</a>
-        <a onclick="showPage('transactionPage')">Transactions</a>
-        <a onclick="showPage('userPage')">User Management</a>
-        <a onclick="showPage('maintenancePage')">Maintenance</a>
-        <a onclick="logout()">Logout</a>
-    </nav>
-    <div class="stats">
-        <div class="stat-card stat-books">Total Books<br><h3 id="statBooks">0</h3></div>
-        <div class="stat-card stat-members">Total Members<br><h3 id="statMembers">0</h3></div>
-        <div class="stat-card stat-issued">Issued Books<br><h3 id="statIssued">0</h3></div>
-        <div class="stat-card stat-fines">Pending Fines<br><h3 id="statFines">0</h3></div>
+  <!-- MOVIES PAGE -->
+  <div id="page-movies" class="page">
+    <h2>Movies</h2>
+    <div class="flex-row">
+      <div class="col">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <input id="movieSearch" type="text" placeholder="Search movies by title..." oninput="displayMovies()" />
+          <button class="primary" onclick="focusAdd('movie')">Add</button>
+        </div>
+        <div style="margin-top:10px;overflow:auto;">
+          <table id="movieTable">
+            <thead><tr><th>Title</th><th>Director</th><th>Available</th><th>Select</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col">
+        <h4>Add Movie</h4>
+        <form id="formAddMovie">
+          <input id="addMovieTitle" type="text" placeholder="Title *" required />
+          <input id="addMovieDirector" type="text" placeholder="Director *" required />
+          <button class="primary" type="submit">Add Movie</button>
+        </form>
+      </div>
     </div>
+  </div>
+
+  <!-- MEMBERSHIP PAGE -->
+  <div id="page-members" class="page">
+    <h2>Membership</h2>
+    <div class="flex-row">
+      <div class="col">
+        <h4>Add Membership</h4>
+        <form id="formAddMember">
+          <input id="memberName" type="text" placeholder="Name *" required />
+          <label class="small">Duration</label>
+          <select id="memberDuration"><option value="6">6 months (default)</option><option value="12">1 year</option><option value="24">2 years</option></select>
+          <button class="primary" type="submit">Add Membership</button>
+        </form>
+      </div>
+      <div class="col">
+        <h4>Membership List (click row to update/cancel)</h4>
+        <div style="overflow:auto;">
+          <table id="memberTable">
+            <thead><tr><th>ID</th><th>Name</th><th>Start</th><th>End</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRANSACTIONS PAGE -->
+  <div id="page-transactions" class="page">
+    <h2>Transactions</h2>
+    <div class="flex-row">
+      <div class="col">
+        <h4>Return Item</h4>
+        <form id="formReturn">
+          <label class="small">Select issued item</label>
+          <select id="returnSelect"><option value="">-- select --</option></select>
+          <div id="returnInfo" class="small" style="margin-top:6px;"></div>
+          <label class="small">Actual Return Date</label>
+          <input id="returnDate" type="date" />
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <label style="display:flex;align-items:center;gap:6px;"><input id="finePaidCheckbox" type="checkbox"/> Fine paid</label>
+            <button class="primary" type="submit">Process Return</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="col">
+        <h4>All Transactions</h4>
+        <div style="overflow:auto;">
+          <table id="transactionsTable">
+            <thead><tr><th>ID</th><th>Title</th><th>Type</th><th>Issue</th><th>Due</th><th>Return</th><th>Fine</th><th>Paid</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- USERS PAGE -->
+  <div id="page-users" class="page">
+    <h2>Users</h2>
+    <div class="flex-row">
+      <div class="col">
+        <h4>Add User</h4>
+        <form id="formAddUser">
+          <input id="userName" type="text" placeholder="Name *" required />
+          <input id="userEmail" type="email" placeholder="Email *" required />
+          <input id="userPass" type="password" placeholder="Password *" required />
+          <select id="userRole"><option value="user" selected>User</option><option value="admin">Admin</option></select>
+          <button class="primary" type="submit">Add User</button>
+        </form>
+      </div>
+      <div class="col">
+        <h4>Saved Users</h4>
+        <div style="overflow:auto;">
+          <table id="usersTable">
+            <thead><tr><th>Name</th><th>Email</th><th>Role</th></tr></thead><tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAINTENANCE PAGE -->
+  <div id="page-maintenance" class="page">
+    <h2>Maintenance (admin only)</h2>
+    <div style="display:flex;gap:8px;">
+      <button class="primary" onclick="exportAll()">Export All (console)</button>
+      <button class="ghost" onclick="resetDomain()">Reset domain data (books/movies/members/transactions)</button>
+    </div>
+    <p class="small" style="margin-top:10px;">Note: users persist; resetting domain restores preloaded items.</p>
+  </div>
+
 </div>
 
-<!-- Book Page -->
-<div id="bookPage" class="hidden card">
-    <h3>Books</h3>
-    <h4>Add Book</h4>
-    <form id="addBookForm">
-        Title: <input type="text" id="bookTitle"><br>
-        Author: <input type="text" id="bookAuthor"><br>
-        Type: <select id="bookType">
-            <option value="book" selected>Book</option>
-            <option value="movie">Movie</option>
-        </select><br>
-        <button type="submit">Add Book</button>
-    </form>
-
-    <h4>Book List</h4>
-    <table id="bookTable">
-        <thead>
-            <tr><th>Title</th><th>Author</th><th>Type</th><th>Available</th><th>Select</th></tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+<!-- PAY FINE OVERLAY -->
+<div class="overlay" id="payOverlay">
+  <div class="modal">
+    <h3>Pay Fine</h3>
+    <div id="payDetails" class="small" style="margin-bottom:8px;"></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <label class="small">Amount</label>
+      <strong id="payAmount">0</strong>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+      <input type="checkbox" id="payConfirmCheck"/> I confirm the fine is paid
+    </label>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;">
+      <button class="ghost" onclick="closePayOverlay()">Cancel</button>
+      <button class="primary" onclick="completePay()">Confirm & Complete</button>
+    </div>
+  </div>
 </div>
-
-<!-- Membership Page -->
-<div id="membershipPage" class="hidden card">
-    <h3>Membership</h3>
-    <h4>Add Membership</h4>
-    <form id="addMembershipForm">
-        Name: <input type="text" id="memberName"><br>
-        Duration: <select id="memberDuration">
-            <option value="6" selected>6 months</option>
-            <option value="12">1 year</option>
-            <option value="24">2 years</option>
-        </select><br>
-        <button type="submit">Add Membership</button>
-    </form>
-    <h4>Membership List</h4>
-    <table id="membershipTable">
-        <thead><tr><th>Name</th><th>Start Date</th><th>End Date</th></tr></thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-<!-- Transactions Page -->
-<div id="transactionPage" class="hidden card">
-    <h3>Transactions</h3>
-    <h4>Issue Book</h4>
-    <form id="issueForm">
-        Book Title: <input type="text" id="issueBook"><br>
-        Issue Date: <input type="date" id="issueDate"><br>
-        Return Date: <input type="date" id="returnDate"><br>
-        Remarks: <input type="text" id="issueRemarks"><br>
-        <button type="submit">Issue Book</button>
-    </form>
-
-    <h4>Return Book</h4>
-    <form id="returnForm">
-        Book Title: <input type="text" id="returnBook"><br>
-        Fine Paid: <input type="checkbox" id="finePaid"><br>
-        Remarks: <input type="text" id="returnRemarks"><br>
-        <button type="submit">Return Book</button>
-    </form>
-
-    <h4>Transactions List</h4>
-    <table id="transactionTable">
-        <thead><tr><th>Book</th><th>Issue Date</th><th>Return Date</th><th>Fine Paid</th></tr></thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-<!-- User Management Page -->
-<div id="userPage" class="hidden card">
-    <h3>User Management</h3>
-    <form id="userForm">
-        Name: <input type="text" id="userName"><br>
-        Type: <select id="userType">
-            <option value="new" selected>New</option>
-            <option value="existing">Existing</option>
-        </select><br>
-        <button type="submit">Add/Update User</button>
-    </form>
-    <h4>User List</h4>
-    <table id="userTable">
-        <thead><tr><th>Name</th><th>Type</th></tr></thead>
-        <tbody></tbody>
-    </table>
-</div>
-
-<!-- Maintenance Page -->
-<div id="maintenancePage" class="hidden card">
-    <h3>Maintenance (Admin Only)</h3>
-    <p>Reports and system maintenance can be accessed by Admin only.</p>
-</div>
-
-</div> <!-- container -->
 
 <script>
-// In-memory data
-let books=[], memberships=[], transactions=[], users=[];
+/* ============================
+   Persistence keys and helpers
+   ============================ */
+const KEY_USERS = 'lms_users_v2';
+const KEY_BOOKS = 'lms_books_v2';
+const KEY_MOVIES = 'lms_movies_v2';
+const KEY_MEMBERS = 'lms_members_v2';
+const KEY_TXNS = 'lms_txns_v2';
 
-// Pre-fill 10 members
-const preMembers = [
-    {name:"Ram", duration:6},{name:"Sham", duration:12},{name:"Deb", duration:6},{name:"Pratik", duration:24},
-    {name:"Soumen", duration:12},{name:"Rajdeep", duration:6},{name:"Soumili", duration:24},{name:"Tanvi", duration:12},
-    {name:"Taniya", duration:6},{name:"Raju", duration:12}
+function load(key, fallback){ try{ const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : fallback;}catch(e){return fallback;} }
+function save(key, val){ try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){ console.error('save error',e); } }
+
+/* ============================
+   Seed default data (books, movies, members)
+   ============================ */
+const defaultBooksList = [
+  {title:"Ramayan",author:"Valmiki"},{title:"Mahabharat",author:"Vyasa"},{title:"Dune",author:"Frank Herbert"},{title:"Room No-304",author:"Unknown"},
+  {title:"Godan",author:"Premchand"},{title:"Gitanjali",author:"Rabindranath Tagore"},{title:"Artha Satra",author:"Kautilya"},{title:"The Suitable Man",author:"Unknown"},
+  {title:"5 Point Someone",author:"Chetan Bhagat"},{title:"A Song of Ice and Fire",author:"George R. R. Martin"},{title:"The Alchemist",author:"Paulo Coelho"},
+  {title:"1984",author:"George Orwell"},{title:"Brave New World",author:"Aldous Huxley"},{title:"The Hobbit",author:"J.R.R. Tolkien"},{title:"Harry Potter",author:"J.K. Rowling"},
+  {title:"The Catcher in the Rye",author:"J.D. Salinger"},{title:"To Kill a Mockingbird",author:"Harper Lee"},{title:"The Great Gatsby",author:"F. Scott Fitzgerald"},
+  {title:"War and Peace",author:"Leo Tolstoy"},{title:"Crime and Punishment",author:"Fyodor Dostoevsky"},{title:"Pride and Prejudice",author:"Jane Austen"},
+  {title:"The Kite Runner",author:"Khaled Hosseini"},{title:"Life of Pi",author:"Yann Martel"},{title:"The Book Thief",author:"Markus Zusak"},{title:"The Da Vinci Code",author:"Dan Brown"},
+  {title:"Angels & Demons",author:"Dan Brown"},{title:"Inferno",author:"Dan Brown"},{title:"Twilight",author:"Stephenie Meyer"},{title:"The Hunger Games",author:"Suzanne Collins"},
+  {title:"Divergent",author:"Veronica Roth"}
 ];
-preMembers.forEach(m=>{
-    let start=new Date(); let end=new Date(); end.setMonth(end.getMonth()+m.duration);
-    memberships.push({name:m.name,start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)});
+
+const defaultMoviesList = [
+  {title:"Goodfellas",director:"Martin Scorsese"},{title:"Taxi Driver",director:"Martin Scorsese"},{title:"Sholay",director:"Ramesh Sippy"},{title:"Avengers",director:"Joss Whedon"},
+  {title:"Apu trilogy",director:"Satyajit Ray"},{title:"22 Shraban",director:"Unknown"},{title:"Taare Zameen Par",director:"Aamir Khan"},{title:"Dangal",director:"Nitesh Tiwari"},
+  {title:"Anand",director:"Hrishikesh Mukherjee"},{title:"Swades",director:"Ashutosh Gowariker"},{title:"Inception",director:"Christopher Nolan"},{title:"Interstellar",director:"Christopher Nolan"},
+  {title:"The Dark Knight",director:"Christopher Nolan"},{title:"Pulp Fiction",director:"Quentin Tarantino"},{title:"Kill Bill",director:"Quentin Tarantino"},{title:"Forrest Gump",director:"Robert Zemeckis"},
+  {title:"The Godfather",director:"Francis Ford Coppola"},{title:"The Godfather Part II",director:"Francis Ford Coppola"},{title:"The Shawshank Redemption",director:"Frank Darabont"},{title:"Gladiator",director:"Ridley Scott"},
+  {title:"Titanic",director:"James Cameron"},{title:"Avatar",director:"James Cameron"},{title:"The Matrix",director:"The Wachowskis"},{title:"Fight Club",director:"David Fincher"},
+  {title:"Se7en",director:"David Fincher"},{title:"The Social Network",director:"David Fincher"},{title:"The Prestige",director:"Christopher Nolan"},{title:"Memento",director:"Christopher Nolan"},
+  {title:"The Matrix Reloaded",director:"The Wachowskis"},{title:"The Matrix Revolutions",director:"The Wachowskis"}
+];
+
+const defaultMembersSeed = [
+  {name:"Ram",duration:6},{name:"Sham",duration:12},{name:"Deb",duration:6},{name:"Pratik",duration:24},{name:"Soumen",duration:12},
+  {name:"Rajdeep",duration:6},{name:"Soumili",duration:24},{name:"Tanvi",duration:12},{name:"Taniya",duration:6},{name:"Raju",duration:12}
+];
+
+/* Load or create storage */
+let users = load(KEY_USERS, []);
+if(!users.find(u=>u.email==='admin@lms.com')) {
+  users.push({name:'Admin', email:'admin@lms.com', password:'admin123', role:'admin'});
+  save(KEY_USERS, users);
+}
+
+let books = load(KEY_BOOKS, defaultBooksList.map(b=>({...b, available:true})));
+let movies = load(KEY_MOVIES, defaultMoviesList.map(m=>({...m, available:true})));
+let members = load(KEY_MEMBERS, defaultMembersSeed.map((m,i)=>{
+  let start = new Date(); let end = new Date();
+  end.setMonth(end.getMonth() + m.duration);
+  return { id: Date.now() + i, name:m.name, start: start.toISOString().slice(0,10), end: end.toISOString().slice(0,10) };
+}));
+let transactions = load(KEY_TXNS, []);
+
+/* ensure save on mutation */
+function persistAll(){
+  save(KEY_BOOKS, books);
+  save(KEY_MOVIES, movies);
+  save(KEY_MEMBERS, members);
+  save(KEY_TXNS, transactions);
+}
+
+/* Utility date helpers */
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function addDays(iso, days){ const d = new Date(iso); d.setDate(d.getDate()+days); return d.toISOString().slice(0,10); }
+function daysBetween(aISO,bISO){ return Math.ceil((new Date(bISO)-new Date(aISO))/(1000*60*60*24)); }
+
+/* Globals runtime */
+let currentUser = null;
+let currentRole = null;
+let pendingReturn = null;
+
+/* =========================
+   AUTH: login / signup
+   ========================= */
+function showSignup(){ document.getElementById('signupArea').style.display='block'; }
+function hideSignup(){ document.getElementById('signupArea').style.display='none'; }
+
+function handleSignup(){
+  const name = document.getElementById('signupName').value.trim();
+  const email = (document.getElementById('signupEmail').value || '').trim().toLowerCase();
+  const pass = document.getElementById('signupPass').value;
+  if(!email || !pass){ showLoginMsg('Email and password required'); return; }
+  if(users.find(u=>u.email===email)){ showLoginMsg('User already exists — please login'); return; }
+  users.push({name: name || email.split('@')[0], email, password: pass, role:'user'});
+  save(KEY_USERS, users);
+  showLoginMsg('Account created — you can login now', 'green');
+  hideSignup();
+}
+function handleLogin(){
+  const email = (document.getElementById('loginEmail').value || '').trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const role = document.getElementById('loginRole').value;
+  if(!email || !pass){ showLoginMsg('Email & password required'); return; }
+  const u = users.find(x => x.email === email);
+  if(!u){ showLoginMsg('No account found. Create one below.'); return; }
+  if(u.password !== pass){ showLoginMsg('Incorrect password'); return; }
+  if(role !== u.role){ showLoginMsg(`Login role mismatch (account role = ${u.role})`); return; }
+  // success
+  currentUser = u;
+  currentRole = u.role;
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('currentUserDisplay').innerText = `${u.name || u.email} (${u.role})`;
+  // initial displays
+  openPage('dashboard');
+  renderAll();
+  showLoginMsg('', 'green', true);
+}
+
+function showLoginMsg(msg, color='red', hide=false){
+  const el = document.getElementById('loginError');
+  if(hide){ el.style.display='none'; return; }
+  el.style.display = msg ? 'block' : 'none';
+  el.style.color = color;
+  el.innerText = msg;
+  if(msg) setTimeout(()=> el.style.display='none', 4500);
+}
+
+/* =========================
+   NAVIGATION & render-all
+   ========================= */
+function openPage(page){
+  // hide all pages
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(p => p.classList.remove('active'));
+  // map
+  const map = {
+    'dashboard': 'page-dashboard',
+    'books': 'page-books',
+    'movies': 'page-movies',
+    'members': 'page-members',
+    'transactions': 'page-transactions',
+    'users': 'page-users',
+    'maintenance': 'page-maintenance'
+  };
+  const id = map[page] || map['dashboard'];
+  document.getElementById(id).classList.add('active');
+  // update specific content
+  if(page === 'books') displayBooks();
+  if(page === 'movies') displayMovies();
+  if(page === 'members') renderMembers();
+  if(page === 'transactions') renderTransactions();
+  if(page === 'users') renderUsers();
+  if(page === 'maintenance') { if(currentRole !== 'admin'){ alert('Access denied - admin only'); openPage('dashboard'); } }
+}
+
+/* =========================
+   DASHBOARD STATS
+   ========================= */
+function updateStats(){
+  document.getElementById('statBooks').innerText = books.length;
+  document.getElementById('statMembers').innerText = members.length;
+  document.getElementById('statIssued').innerText = transactions.filter(t=>!t.returned).length;
+  document.getElementById('statFines').innerText = transactions.filter(t => t.fine > 0 && !t.finePaid).length;
+}
+
+/* =========================
+   BOOKS: display, add, search
+   ========================= */
+function displayBooks(){
+  const filter = (document.getElementById('bookSearch').value || '').toLowerCase();
+  const tbody = document.querySelector('#bookTable tbody'); tbody.innerHTML = '';
+  books.filter(b => b.title.toLowerCase().includes(filter)).forEach((b, idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${b.title}</td><td>${b.author}</td><td>${b.available ? 'Yes' : 'No'}</td><td><input type="radio" name="selBook" value="${idx}"></td>`;
+    tbody.appendChild(tr);
+  });
+  updateStats();
+}
+document.getElementById('formAddBook').addEventListener('submit', function(e){
+  e.preventDefault();
+  const t = (document.getElementById('addBookTitle').value || '').trim();
+  const a = (document.getElementById('addBookAuthor').value || '').trim();
+  if(!t || !a){ alert('Title & Author required'); return; }
+  books.push({title:t, author:a, available:true});
+  save(KEY_BOOKS, books); displayBooks(); document.getElementById('formAddBook').reset(); updateStats();
 });
 
-// Pre-fill books
-const preBooks = [
-    {title:"Ramayan", author:"Valmiki", type:"book"},
-    {title:"Mahabharat", author:"Vyasa", type:"book"},
-    {title:"Dune", author:"Frank Herbert", type:"book"},
-    {title:"Room No- 304", author:"Unknown", type:"book"},
-    {title:"Godan", author:"Premchand", type:"book"},
-    {title:"Gitanjali", author:"Rabindranath Tagore", type:"book"},
-    {title:"Artha Satra", author:"Kautilya", type:"book"},
-    {title:"The Suitable Man", author:"Unknown", type:"book"},
-    {title:"5 Point Someone", author:"Chetan Bhagat", type:"book"},
-    {title:"A Song of Ice and Fire", author:"George R. R. Martin", type:"book"}
-];
-preBooks.forEach(b=>books.push({...b, available:true}));
+/* =========================
+   MOVIES: display, add, search
+   ========================= */
+function displayMovies(){
+  const filter = (document.getElementById('movieSearch').value || '').toLowerCase();
+  const tbody = document.querySelector('#movieTable tbody'); tbody.innerHTML = '';
+  movies.filter(m => m.title.toLowerCase().includes(filter)).forEach((m, idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${m.title}</td><td>${m.director}</td><td>${m.available ? 'Yes' : 'No'}</td><td><input type="radio" name="selMovie" value="${idx}"></td>`;
+    tbody.appendChild(tr);
+  });
+  updateStats();
+}
+document.getElementById('formAddMovie').addEventListener('submit', function(e){
+  e.preventDefault();
+  const t = (document.getElementById('addMovieTitle').value || '').trim();
+  const d = (document.getElementById('addMovieDirector').value || '').trim();
+  if(!t || !d){ alert('Title & Director required'); return; }
+  movies.push({title:t, director:d, available:true});
+  save(KEY_MOVIES, movies); displayMovies(); document.getElementById('formAddMovie').reset(); updateStats();
+});
 
-// Display functions
-function displayBooks(){ let tbody=document.querySelector('#bookTable tbody'); tbody.innerHTML=''; books.forEach((b,i)=>{tbody.innerHTML+=`<tr><td>${b.title}</td><td>${b.author}</td><td>${b.type}</td><td>${b.available?'Yes':'No'}</td><td><input type="radio" name="selectBook" value="${i}"></td></tr>`}); document.getElementById('statBooks').innerText=books.length;}
-function displayMemberships(){ let tbody=document.querySelector('#membershipTable tbody'); tbody.innerHTML=''; memberships.forEach(m=>{tbody.innerHTML+=`<tr><td>${m.name}</td><td>${m.start}</td><td>${m.end}</td></tr>`}); document.getElementById('statMembers').innerText=memberships.length;}
-function displayTransactions(){ let tbody=document.querySelector('#transactionTable tbody'); tbody.innerHTML=''; let issuedCount=0,pendingFines=0; transactions.forEach(t=>{tbody.innerHTML+=`<tr><td>${t.book}</td><td>${t.issueDate}</td><td>${t.returnDate}</td><td>${t.finePaid?'Yes':'No'}</td></tr>`; if(t.issueDate!=='-') issuedCount++; if(!t.finePaid) pendingFines++; }); document.getElementById('statIssued').innerText=issuedCount; document.getElementById('statFines').innerText=pendingFines;}
-function displayUsers(){ let tbody=document.querySelector('#userTable tbody'); tbody.innerHTML=''; users.forEach(u=>{tbody.innerHTML+=`<tr><td>${u.name}</td><td>${u.type}</td></tr>`});}
+/* =========================
+   ISSUE: populate titles, issue validation
+   ========================= */
+function populateIssueTitles(){
+  const type = document.getElementById('issueType').value;
+  const sel = document.getElementById('issueTitleSelect'); sel.innerHTML = '<option value="">-- select --</option>';
+  if(type === 'book'){
+    books.forEach((b,i)=>{ if(b.available) sel.insertAdjacentHTML('beforeend', `<option value="book|${i}">${b.title}</option>`); });
+  } else {
+    movies.forEach((m,i)=>{ if(m.available) sel.insertAdjacentHTML('beforeend', `<option value="movie|${i}">${m.title}</option>`); });
+  }
+  // set dates defaults
+  const today = todayISO();
+  document.getElementById('issueDate').value = today;
+  document.getElementById('issueDate').min = today;
+  document.getElementById('issueReturnDate').value = addDays(today, 15);
+  document.getElementById('issueReturnDate').min = today;
+  document.getElementById('issueReturnDate').max = addDays(today, 15);
+  document.getElementById('issueAuthorDir').value = '';
+}
 
-// Login
-let currentUserRole='';
-document.getElementById('loginForm').onsubmit=function(e){ e.preventDefault(); currentUserRole=document.getElementById('loginRole').value; alert('Login successful as '+currentUserRole); document.getElementById('loginPage').classList.add('hidden'); document.getElementById('dashboard').classList.remove('hidden'); showPage('bookPage'); displayBooks(); displayMemberships(); displayTransactions(); displayUsers();}
+document.getElementById('issueTitleSelect').addEventListener('change', function(){
+  const val = this.value;
+  if(!val){ document.getElementById('issueAuthorDir').value = ''; return; }
+  const [type, idx] = val.split('|');
+  if(type==='book'){ document.getElementById('issueAuthorDir').value = books[Number(idx)].author; }
+  else { document.getElementById('issueAuthorDir').value = movies[Number(idx)].director; }
+});
 
-// Navigation
-function showPage(pageId){ const pages=['bookPage','membershipPage','transactionPage','userPage','maintenancePage']; pages.forEach(p=>document.getElementById(p).classList.add('hidden')); if(pageId==='maintenancePage' && currentUserRole!=='admin'){ alert('Access denied! Admin only.'); return; } document.getElementById(pageId).classList.remove('hidden'); }
+document.getElementById('formIssue').addEventListener('submit', function(e){
+  e.preventDefault();
+  const choice = document.getElementById('issueTitleSelect').value;
+  if(!choice){ alert('Select an available title to issue'); return; }
+  const [type, idxStr] = choice.split('|'); const idx = Number(idxStr);
+  const issueDate = document.getElementById('issueDate').value || todayISO();
+  const returnDate = document.getElementById('issueReturnDate').value || addDays(issueDate, 15);
+  if(new Date(issueDate) < new Date(todayISO())){ alert('Issue date cannot be before today'); return; }
+  if(daysBetween(issueDate, returnDate) > 15){ alert('Return date must be within 15 days of issue'); return; }
 
-// Logout
-function logout(){ location.reload(); }
+  const txnId = 'TX' + (transactions.length + 1001);
+  const title = (type === 'book') ? books[idx].title : movies[idx].title;
+  transactions.push({
+    id: txnId, title, type, refIdx: idx, issueDate, dueDate: returnDate, returnDate: null, fine:0, finePaid:false, returned:false, remarks: (document.getElementById('issueRemarks').value||'')
+  });
 
-// Add Book
-document.getElementById('addBookForm').onsubmit=function(e){ e.preventDefault(); let title=document.getElementById('bookTitle').value; let author=document.getElementById('bookAuthor').value; let type=document.getElementById('bookType').value; if(!title||!author){ alert('All fields required'); return;} books.push({title,author,type,available:true}); alert('Book added successfully'); displayBooks();}
+  // mark not available
+  if(type === 'book'){ books[idx].available = false; save(KEY_BOOKS, books); }
+  else { movies[idx].available = false; save(KEY_MOVIES, movies); }
+  save(KEY_TXNS, transactions);
+  persistAll();
+  alert('Issued: ' + title);
+  // reset & refresh
+  document.getElementById('formIssue').reset();
+  populateIssueTitles();
+  renderTransactions(); displayBooks(); displayMovies(); updateStats();
+});
 
-// Add Membership
-document.getElementById('addMembershipForm').onsubmit=function(e){ e.preventDefault(); let name=document.getElementById('memberName').value; let duration=parseInt(document.getElementById('memberDuration').value); if(!name){ alert('Name required'); return;} let start=new Date(); let end=new Date(); end.setMonth(end.getMonth()+duration); memberships.push({name,start:start.toISOString().slice(0,10),end:end.toISOString().slice(0,10)}); alert('Membership added'); displayMemberships();}
+/* reset issue form helper */
+function resetIssueForm(){
+  document.getElementById('formIssue').reset();
+  populateIssueTitles();
+}
 
-// Transactions
-document.getElementById('issueForm').onsubmit=function(e){ e.preventDefault(); let book=document.getElementById('issueBook').value; if(!book){ alert('Book name required'); return;} let issueDate=document.getElementById('issueDate').value||new Date().toISOString().slice(0,10); let returnDate=document.getElementById('returnDate').value||new Date(new Date().setDate(new Date().getDate()+15)).toISOString().slice(0,10); transactions.push({book,issueDate,returnDate,finePaid:false}); alert('Book issued'); displayTransactions();}
-document.getElementById('returnForm').onsubmit=function(e){ e.preventDefault(); let book=document.getElementById('returnBook').value; let finePaid=document.getElementById('finePaid').checked; if(!book){ alert('Book name required'); return;} if(!finePaid){ alert('Please pay fine first'); return;} transactions.push({book,issueDate:'-',returnDate:new Date().toISOString().slice(0,10),finePaid:true}); alert('Book returned'); displayTransactions();}
+/* focus add helpers */
+function focusAdd(which){
+  if(which === 'book'){ openPage('books'); setTimeout(()=> document.getElementById('addBookTitle').focus(), 120); }
+  if(which === 'movie'){ openPage('movies'); setTimeout(()=> document.getElementById('addMovieTitle').focus(), 120); }
+}
 
-// User Management
-document.getElementById('userForm').onsubmit=function(e){ e.preventDefault(); let name=document.getElementById('userName').value; let type=document.getElementById('userType').value; if(!name){ alert('Name required'); return;} users.push({name,type}); displayUsers();}
+/* =========================
+   RETURN: choose issued, compute fine, require pay if >0
+   ========================= */
+function renderTransactions(){
+  const tbody = document.querySelector('#transactionsTable tbody'); tbody.innerHTML = '';
+  transactions.forEach((t, i)=>{
+    tbody.insertAdjacentHTML('beforeend', `<tr><td>${t.id}</td><td>${t.title}</td><td>${t.type}</td><td>${t.issueDate}</td><td>${t.dueDate}</td><td>${t.returnDate || '-'}</td><td>${t.fine || 0}</td><td>${t.finePaid ? 'Yes' : (t.returned ? 'No' : '-')}</td></tr>`);
+  });
+
+  // populate return select with not-yet-returned
+  const sel = document.getElementById('returnSelect'); sel.innerHTML = '<option value="">-- select --</option>';
+  transactions.forEach((t, idx)=>{
+    if(!t.returned) sel.insertAdjacentHTML('beforeend', `<option value="${idx}">${t.id} — ${t.title} (${t.type}) — due ${t.dueDate}</option>`);
+  });
+  updateStats();
+}
+
+document.getElementById('returnSelect').addEventListener('change', function(){
+  const val = this.value;
+  if(!val){ document.getElementById('returnInfo').innerText = ''; return; }
+  const rec = transactions[Number(val)];
+  document.getElementById('returnInfo').innerText = `Issued: ${rec.issueDate}. Due: ${rec.dueDate}. Remarks: ${rec.remarks || '-'}`;
+  document.getElementById('returnDate').value = todayISO();
+  document.getElementById('finePaidCheckbox').checked = false;
+});
+
+document.getElementById('formReturn').addEventListener('submit', function(e){
+  e.preventDefault();
+  const sel = document.getElementById('returnSelect').value;
+  if(!sel){ alert('Select issued item'); return; }
+  const recIndex = Number(sel);
+  const rec = transactions[recIndex];
+  const actualReturn = document.getElementById('returnDate').value || todayISO();
+
+  // compute fine: 10 units per day late
+  let fine = 0;
+  if(new Date(actualReturn) > new Date(rec.dueDate)){
+    const daysLate = daysBetween(rec.dueDate, actualReturn);
+    fine = daysLate * 10;
+  }
+
+  // store pendingReturn and show overlay
+  pendingReturn = {recIndex, actualReturn, fine};
+  showPayOverlay(rec.title, rec.type, fine);
+});
+
+/* overlay functions */
+function showPayOverlay(title, type, fine){
+  document.getElementById('payDetails').innerText = `Returning: ${title} (${type})`;
+  document.getElementById('payAmount').innerText = fine;
+  document.getElementById('payConfirmCheck').checked = false;
+  document.getElementById('payOverlay').style.display = 'flex';
+}
+function closePayOverlay(){ document.getElementById('payOverlay').style.display = 'none'; pendingReturn = null; }
+function completePay(){
+  const confirmed = document.getElementById('payConfirmCheck').checked;
+  if(pendingReturn.fine > 0 && !confirmed){ alert('Please confirm fine payment'); return; }
+  const i = pendingReturn.recIndex;
+  transactions[i].returnDate = pendingReturn.actualReturn;
+  transactions[i].fine = pendingReturn.fine;
+  transactions[i].finePaid = (pendingReturn.fine === 0) ? true : confirmed;
+  transactions[i].returned = true;
+  // free up resource
+  const rec = transactions[i];
+  if(rec.type === 'book'){ books[rec.refIdx].available = true; save(KEY_BOOKS, books); }
+  else { movies[rec.refIdx].available = true; save(KEY_MOVIES, movies); }
+  save(KEY_TXNS, transactions);
+  persistAll();
+  renderTransactions(); displayBooks(); displayMovies(); updateStats();
+  closePayOverlay();
+  alert('Return processed successfully.');
+}
+
+/* =========================
+   MEMBERS: add / render / update
+   ========================= */
+document.getElementById('formAddMember').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = (document.getElementById('memberName').value || '').trim();
+  const duration = Number(document.getElementById('memberDuration').value || 6);
+  if(!name){ alert('Name required'); return; }
+  const start = todayISO();
+  const end = addDays(start, Math.round(duration * 30)); // rough months->days
+  const id = Date.now();
+  members.push({id, name, start, end});
+  save(KEY_MEMBERS, members);
+  renderMembers();
+});
+
+function renderMembers(){
+  const tbody = document.querySelector('#memberTable tbody'); tbody.innerHTML = '';
+  members.forEach(m=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${m.id}</td><td>${m.name}</td><td>${m.start}</td><td>${m.end}</td>`;
+    tr.onclick = ()=> handleMemberClick(m.id);
+    tbody.appendChild(tr);
+  });
+  updateStats();
+}
+function handleMemberClick(id){
+  const m = members.find(x=>x.id===id);
+  if(!m) return;
+  const newName = prompt('Update name (Cancel to abort):', m.name);
+  if(newName === null) return;
+  const doExtend = confirm('OK to extend membership by 6 months? Cancel to remove membership.');
+  if(doExtend){
+    const nd = new Date(m.end); nd.setMonth(nd.getMonth() + 6);
+    m.end = nd.toISOString().slice(0,10);
+    m.name = (newName || m.name);
+    save(KEY_MEMBERS, members);
+    renderMembers();
+    alert('Membership extended 6 months.');
+  } else {
+    if(confirm('Delete/cancel membership?')){ members = members.filter(x=>x.id!==id); save(KEY_MEMBERS, members); renderMembers(); updateStats(); alert('Membership cancelled.'); }
+  }
+}
+
+/* =========================
+   USERS: add / render
+   ========================= */
+document.getElementById('formAddUser').addEventListener('submit', function(e){
+  e.preventDefault();
+  const name = (document.getElementById('userName').value || '').trim();
+  const email = (document.getElementById('userEmail').value || '').trim().toLowerCase();
+  const pass = document.getElementById('userPass').value;
+  const role = document.getElementById('userRole').value;
+  if(!name||!email||!pass){ alert('Fill all fields'); return; }
+  if(users.find(u=>u.email===email)){ alert('User exists'); return; }
+  users.push({name, email, password: pass, role});
+  save(KEY_USERS, users);
+  renderUsers();
+  document.getElementById('formAddUser').reset();
+});
+
+function renderUsers(){
+  const tbody = document.querySelector('#usersTable tbody'); tbody.innerHTML = '';
+  users.forEach(u => tbody.insertAdjacentHTML('beforeend', `<tr><td>${u.name||'-'}</td><td>${u.email}</td><td>${u.role}</td></tr>`));
+}
+
+/* =========================
+   RENDER & initial wiring
+   ========================= */
+function renderAll(){
+  displayBooks(); displayMovies(); renderMembers(); renderTransactions(); renderUsers(); updateStats();
+  populateIssueTitles();
+}
+
+function logout(){
+  if(confirm('Logout?')) location.reload();
+}
+
+/* Search bindings already in markup call displayBooks/displayMovies */
+
+function exportAll(){
+  console.log({users, books, movies, members, transactions});
+  alert('Data exported to console.');
+}
+function resetDomain(){
+  if(!confirm('Reset books/movies/members/transactions to defaults?')) return;
+  books = defaultBooksList.map(b=>({...b, available:true}));
+  movies = defaultMoviesList.map(m=>({...m, available:true}));
+  members = defaultMembersSeed.map((m, i)=>{ let s=new Date(), e=new Date(); e.setMonth(e.getMonth()+m.duration); return {id:Date.now()+i, name:m.name, start:s.toISOString().slice(0,10), end:e.toISOString().slice(0,10)};});
+  transactions = [];
+  persistAll();
+  renderAll();
+  alert('Reset complete.');
+}
+
+/* Auto-init on load: if user already logged in? (we don't auto-login) */
+document.addEventListener('DOMContentLoaded', function(){
+  // wire up populateIssueTitles on init
+  populateIssueTitles();
+  // show dashboard counts if user logs in
+});
+
+/* Expose some functions for debugging in console */
+window._LMS = { users, books, movies, members, transactions, persistAll };
 
 </script>
 </body>
